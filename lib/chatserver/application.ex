@@ -13,8 +13,7 @@ defmodule ChatServer.Application do
       # {DynamicSupervisor, strategy: :one_for_one, name: ChatServer.Connection},
       {Task.Supervisor, name: ChatServer.TaskSupervisor},
       {Task, fn -> ChatServer.accept(port) end},
-      {ChatServer.Worker, %{}},
-      {ChatServer.Broadcast, []}
+      {ChatServer.Broadcast, %{}}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

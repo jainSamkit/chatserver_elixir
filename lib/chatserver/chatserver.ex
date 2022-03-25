@@ -32,11 +32,11 @@ defmodule ChatServer do
     case read_line(socket) do
         {:ok, data} ->
           case ChatServer.Command.parse(data) do
-            {:ok, {:connect, user}} -> connect(socket, user)
-            {:ok, {:disconnect, _}} -> disconnect(socket)
-            {:ok, {:broadcast, message}} -> broadcast(message)
-            {:ok, {:register, user, password}} -> register(socket, user, password)
-            {:ok, {:auth, user, password}} -> auth(socket, user, password)
+            {:connect, user} -> connect(socket, user)
+            {:disconnect, _} -> disconnect(socket)
+            {:broadcast, message} -> broadcast(message)
+            {:register, user, password} -> register(socket, user, password)
+            {:auth, user, password} -> auth(socket, user, password)
             {:error, :unknown} -> write_line(socket, {:error, :unknown_command})
           end
       end
@@ -46,22 +46,22 @@ defmodule ChatServer do
   
   defp connect(socket, nickname) do
 
-    pid = Process.whereis(ChatWorker)
+    pid = Process.whereis(ChatServer.Broadcast)
     :ok = GenServer.call(pid, {:connect, socket, nickname})
     
     write_line(socket, {:ok, "Connected #{nickname}\r\n"})
   end
   
   defp disconnect(socket) do
-    pid = Process.whereis(ChatWorker)
+    pid = Process.whereis(ChatServer.Broadcast)
     :ok = Genserver.call(pid, {:disconnect, socket})
     
     write_line(socket, :disconnect)
   end
   
   defp broadcast(message) do
-    pid = Process.whereis(ChatWorker)
-    GenServer.cast(pid, {:broadcast, message})
+    pid = Process.whereis(ChatServer.Broadcast)
+    GenServer.cast(pid, {:send, message})
   end
   
   defp register(socket, name, password) do
