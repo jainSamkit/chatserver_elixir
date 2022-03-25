@@ -1,0 +1,163 @@
+data ttpes
+    number --> int, float
+    atom
+    references
+    fun
+    port 
+    pid
+    
+    data likes --
+        tuple
+        map 
+        list 
+        binary
+
+
+     any data types can be compared
+     useful for different storage types
+     ordered_tree ,use any erlang term as a ordered_tree
+
+     integers and floats are converted before comparing. 
+
+    integers are converted to float and vice versa if float have high precision
+    
+
+
+    encode strings as charlists 
+    utf-8 vs chalists 
+
+
+    Tagging
+        type tag in memory 
+        terms --> immediate and stack slot
+                boxed terms on the heap like tuples
+        boxed part --> a tagged pointer , number of words stored on the process heap 
+    the boxes stored on the heap have a header and a body
+    unless its a list 
+
+    use least signifacnt bits for tags
+    atleast 2 bits unused for pointers
+    these bits can be used for tags
+
+    2 bits not enough for all the types 
+
+    00 Header --> continuation pointer for function on stack 
+    01 List (cons)
+    10 boxed
+    11 Immediate
+        00 11 pid
+        01 11 port
+        10 11 immediate 2
+            00 10 11 atom
+            01 10 11 catch
+            10 10 11 unused
+            11 10 11 nil
+        11 11 small integer
+
+        pid and ports can be compared for equality efficiently. 
+        integers --> small integer and bignums
+
+        bignums are stored on the heap as boxed objects if much larger
+        is_both_small(x,y), defined as (x & y & 1111) == 1111
+
+    Atoms
+        made up of an index in the atom table.Can be compared easily.
+
+    Boxed terms
+
+    Message passing
+        messages are copied form sender heap to message que of the receiver
+        no references
+        which means garbage collection can be exclusive
+
+        if we cant put it on the heap, we store it off heap, memory allocation.
+        garbage collection doesnt go off heap 
+
+        process behavior.
+            :on_heap
+            :off_heap
+
+        if a process receives off heap m gc can ignore and not do additional copying of unseen messages
+
+    GC 
+        copying generational gc
+            1 heap/process
+
+            free reclaimation when a process process
+            small root set
+            sort of incremental
+            improved cache locality --> all data in one place
+            cheap stack/heap test
+            small extra footprint during GC
+
+            allocate all the data to the new heap 
+
+        generational garbage collection vs fullsweep
+        
+    
+    binaries 
+        small binaries (<64 bytes) stored directly on the on_heap
+        select a part of a binary and create a sub-binary that is reference to a
+
+        list of off-heap binaries 
+        two subtle problems:
+            1. if you create a sub-binary the process still has a reference to the binary
+            2. passing a binary to a process that sends it on without looking at it, creates a new reference.
+
+        
+    Sharing 
+
+    should i always share messages as binaries?
+
+
+    ets 
+
+    dets 
+        disk space ets
+        can be opened by multiple processes
+        buddy system in memory
+        set,bag,duplicate_bag
+
+    mnesia 
+        acid database
+        set,ordered_set and bag 
+
+        table storage types 
+            ram copies
+            disc copies 
+            disc_only_copies
+            ext - -external.You provide the implementation
+
+        provides transactions
+        aborted, activit, sync transaction, async_dirty
+        sync_dirty -- dirty context, but waut for replicas
+
+        latest log 
+
+        dirty operations: 
+            no locks 
+            tid store 
+            direct access to table backend
+            dirty updates (e.g., delete, write)
+            doesnt respect any locks 
+            will be replicated ,but again,order is not guaranteed
+            can leave you in an inconsistent state
+
+Q.  I have processes sharing large messages. I am not using binary copy. So the heap size grows quickly. 
+    never use floats for keys 
+
+    key and values pair to delete
+    leveldb can be used with mnesia.
+
+
+
+
+small literals are created each time with beam instruction and larger literals are stored in literal area and stored globally. 
+
+
+
+
+
+
+                    
+
